@@ -733,7 +733,7 @@ ngx_http_enhanced_memcached_get_namespace(ngx_http_request_t * r, ngx_http_varia
 
   ctx->key_status = WAIT_GET_NS;
 
-  cl = ngx_http_enhanced_memcached_create_buffer(r, 4 + namespace->len + 2); // + 6
+  cl = ngx_http_enhanced_memcached_create_buffer(r, 4 + namespace->len + 6 + 2);
   if (cl == NULL) {
     return NGX_ERROR;
   }
@@ -746,9 +746,9 @@ ngx_http_enhanced_memcached_get_namespace(ngx_http_request_t * r, ngx_http_varia
 
   ctx->namespace_key.data = b->last;
 
-  //*b->last++ = '_'; *b->last++ = '_'; *b->last++ = 'n'; *b->last++ = 's'; *b->last++ = '_'; *b->last++ = '_';
-
   b->last = ngx_copy(b->last, namespace->data, namespace->len);
+  
+  *b->last++ = '_'; *b->last++ = '_'; *b->last++ = 'n'; *b->last++ = 's'; *b->last++ = '_'; *b->last++ = '_';
 
   ctx->namespace_key.len = b->last - ctx->namespace_key.data;
 
