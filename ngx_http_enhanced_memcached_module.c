@@ -141,6 +141,13 @@ static ngx_command_t  ngx_http_enhanced_memcached_commands[] = {
       offsetof(ngx_http_enhanced_memcached_loc_conf_t, upstream.local),
       NULL },
 
+    { ngx_string("enhanced_memcached_socket_keepalive"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_enhanced_memcached_loc_conf_t, upstream.socket_keepalive),
+      NULL },
+
     { ngx_string("enhanced_memcached_connect_timeout"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_msec_slot,
@@ -743,7 +750,7 @@ ngx_http_enhanced_memcached_get_namespace(ngx_http_request_t * r, ngx_http_varia
   ctx->namespace_key.data = b->last;
 
   b->last = ngx_copy(b->last, namespace->data, namespace->len);
-  
+
   *b->last++ = '_'; *b->last++ = '_'; *b->last++ = 'n'; *b->last++ = 's'; *b->last++ = '_'; *b->last++ = '_';
 
   ctx->namespace_key.len = b->last - ctx->namespace_key.data;
@@ -1721,6 +1728,7 @@ ngx_http_enhanced_memcached_create_loc_conf(ngx_conf_t *cf)
      *     conf->upstream.location = NULL;
      */
 
+    conf->upstream.socket_keepalive = NGX_CONF_UNSET;
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.send_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.read_timeout = NGX_CONF_UNSET_MSEC;
@@ -1760,6 +1768,9 @@ ngx_http_enhanced_memcached_merge_loc_conf(ngx_conf_t *cf, void *parent, void *c
 {
     ngx_http_enhanced_memcached_loc_conf_t *prev = parent;
     ngx_http_enhanced_memcached_loc_conf_t *conf = child;
+
+    ngx_conf_merge_value(conf->upstream.socket_keepalive,
+                              prev->upstream.socket_keepalive, 0);
 
     ngx_conf_merge_msec_value(conf->upstream.connect_timeout,
                               prev->upstream.connect_timeout, 60000);
